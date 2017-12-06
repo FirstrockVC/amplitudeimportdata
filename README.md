@@ -1,7 +1,5 @@
 # Amplitude Import Data
 
-Lorem impsum alsflafs
-
 ## Getting Started
 
 ### Prerequisites
