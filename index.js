@@ -68,7 +68,6 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
 
     cohorts[cohort_id].push({week: weeks[index + 1], count: ids.length});
   }
-  //console.log(cohorts);
   extract_cohorts(weeks, data, cohorts, ++cohort_id);
 };
 
@@ -83,10 +82,10 @@ app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
 
-app.get('/cohort', (req, res) => {
-  const { filename, frecuency } = {filename: 'effortless.csv', frecuency: 'weekly'};
+app.post('/cohort', (req, res) => {
+  //const { filename, frecuency } = {filename: 'effortless.csv', frecuency: 'weekly'};
 
-  csv2json(filename)
+  csv2json(req.filename)
     .then((data) => {
       // Order the response by the date from older to newer
       const range = moment.range('2017-10-23', '2017-12-11'); 
