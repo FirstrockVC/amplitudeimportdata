@@ -9,6 +9,11 @@ const moment = MomentRange.extendMoment(Moment);
 
 alasql.fn.moment = moment;
 
+/**
+ * Wrapper method to convert CSV into JSON and format dates
+ * @param filename
+ * @returns {Promise}
+ */
 const csv2json = (filename) => {
   return new Promise((success, reject) => {
     let csv_data = [];
@@ -32,6 +37,40 @@ const csv2json = (filename) => {
   });
 };
 
+/**
+ * Recursive method to extract cohorts
+ * @param weeks
+ * @param cohorts
+ */
+const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
+  console.log(cohort_id);
+  if(weeks.length === 0) return cohorts;
+
+  // Extract the cohort unique IDs from week 0
+  const result = alasql('SELECT DISTINCT distinct_id from ? WHERE time BETWEEN "'+ weeks[0] +'" AND "'+ weeks[1] +'" GROUP BY distinct_id ORDER BY time ASC', [data]);
+  const unique_ids = result.map(obj => {
+    return obj.distinct_id;
+  });
+
+  cohorts[cohort_id] = [];
+  cohorts[cohort_id].push({week: weeks[0], count: unique_ids.length});
+
+  weeks.splice(0, 1); // Delete the first week
+
+  for(let [index, week] of weeks.entries()) {
+    if (weeks[index + 1] === undefined) continue;
+
+    const query_res = alasql('SELECT DISTINCT distinct_id from ? WHERE distinct_id IN ("'+(unique_ids.join('" , "'))+'") AND time BETWEEN "'+ weeks[index] +'" AND "'+ weeks[index + 1] +'" GROUP BY distinct_id ORDER BY time ASC', [data]);
+
+    const ids = query_res.map(obj => {
+      return obj.distinct_id;
+    });
+
+    cohorts[cohort_id].push({week: weeks[index + 1], count: ids.length});
+  }
+  //console.log(cohorts);
+  extract_cohorts(weeks, data, cohorts, ++cohort_id);
+};
 
 // Body parser configuration
 app.use( bodyParser.json() );
@@ -52,12 +91,12 @@ app.get('/cohort', (req, res) => {
       // Order the response by the date from older to newer
       const range = moment.range('2017-10-23', '2017-12-11'); 
       let weeks = [];   
-        for (let month of range.by('week')) {
-            weeks.push(month.format('MM/DD/YYYY'));
-        }
-       const cohort1 = 'SELECT DISTINCT distinct_id from ? WHERE time BETWEEN "'+ weeks[0] +'" AND "'+ weeks[1] +'" GROUP BY distinct_id ORDER BY time ASC';
-       const cohort2 = alasql('SELECT DISTINCT distinct_id from ? WHERE time BETWEEN "'+ weeks[1] +'" AND "'+ weeks[2] +'" AND distinct_id IN ('+ cohort1 + ') GROUP BY distinct_id ORDER BY time ASC', [data])
-       res.json(cohort2);
+      for (let month of range.by('week')) {
+          weeks.push(month.format('MM/DD/YYYY'));
+      }
+      const cohorts = [];
+      extract_cohorts(weeks, data, cohorts, 0);
+      res.json(cohorts);
     })
     .catch((error) => {
       console.error(error);
