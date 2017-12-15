@@ -6,6 +6,7 @@ const alasql = require('alasql');
 const Moment = require('moment');
 const MomentRange = require('moment-range');
 const moment = MomentRange.extendMoment(Moment);
+const csv_out = require('express-csv');
 
 alasql.fn.moment = moment;
 
@@ -43,7 +44,6 @@ const csv2json = (filename) => {
  * @param cohorts
  */
 const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
-  console.log(cohort_id);
   if(weeks.length === 0) return cohorts;
 
   // Extract the cohort unique IDs from week 0
@@ -96,7 +96,19 @@ app.get('/cohort', (req, res) => {
       }
       const cohorts = [];
       extract_cohorts(weeks, data, cohorts, 0);
-      res.json(cohorts);
+
+      const final_cohorts = [];
+      for(let cohort of cohorts) {
+        let index_cohort = cohort[0].week;
+        for(let cohort_data of cohort.entries()) {
+          console.log(cohort_data);
+          final_cohorts.push([index_cohort, cohort_data[1].week, cohort_data[1].count, 0]);
+        }
+      }
+
+      console.log(final_cohorts);
+
+      res.csv(final_cohorts);
     })
     .catch((error) => {
       console.error(error);
