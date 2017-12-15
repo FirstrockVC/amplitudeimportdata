@@ -82,10 +82,10 @@ app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
 
-app.post('/cohort', (req, res) => {
-  //const { filename, frecuency } = {filename: 'effortless.csv', frecuency: 'weekly'};
+app.get('/cohort', (req, res) => {
+  const { filename, frecuency } = {filename: 'effortless.csv', frecuency: 'weekly'};
 
-  csv2json(req.filename)
+  csv2json(filename)
     .then((data) => {
       // Order the response by the date from older to newer
       const range = moment.range('2017-10-23', '2017-12-11'); 
