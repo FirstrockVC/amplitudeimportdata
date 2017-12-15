@@ -3,7 +3,10 @@ const app = express();
 const bodyParser = require('body-parser');
 const csv = require('csvtojson');
 const alasql = require('alasql');
-const moment = require('moment');
+const Moment = require('moment');
+const MomentRange = require('moment-range');
+const moment = MomentRange.extendMoment(Moment);
+
 alasql.fn.moment = moment;
 
 const csv2json = (filename) => {
@@ -16,7 +19,7 @@ const csv2json = (filename) => {
       .on('json',(jsonObj)=>{
         csv_data.push({
           distinct_id: jsonObj.distinct_id,
-          time: moment(parseInt(jsonObj.time)).startOf('day') // Set it to the beginning of the day
+          time: moment(Number(jsonObj.time)).format('MM/DD/YYYY') // Set it to the beginning of the day
         });
       })
       .on('done',(error)=>{
@@ -41,14 +44,20 @@ app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
 
-app.post('/cohort', (req, res) => {
+app.get('/cohort', (req, res) => {
   const { filename, frecuency } = {filename: 'effortless.csv', frecuency: 'weekly'};
 
   csv2json(filename)
     .then((data) => {
       // Order the response by the date from older to newer
-      const response = alasql('SELECT DISTINCT distinct_id, time from ? ORDER BY time ASC', [data]);
-      res.json(response);
+      const range = moment.range('2017-10-23', '2017-12-11'); 
+      let weeks = [];   
+        for (let month of range.by('week')) {
+            weeks.push(month.format('MM/DD/YYYY'));
+        }
+       const cohort1 = 'SELECT DISTINCT distinct_id from ? WHERE time BETWEEN "'+ weeks[0] +'" AND "'+ weeks[1] +'" GROUP BY distinct_id ORDER BY time ASC';
+       const cohort2 = alasql('SELECT DISTINCT distinct_id from ? WHERE time BETWEEN "'+ weeks[1] +'" AND "'+ weeks[2] +'" AND distinct_id IN ('+ cohort1 + ') GROUP BY distinct_id ORDER BY time ASC', [data])
+       res.json(cohort2);
     })
     .catch((error) => {
       console.error(error);
