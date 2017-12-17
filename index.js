@@ -94,7 +94,7 @@ app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
 
-app.get('/cohort', (req, res) => {
+app.post('/cohort', (req, res) => {
   const body =  req.body;
   csv2json(body.data)
     .then((data) => {
