@@ -18,7 +18,6 @@ alasql.fn.moment = moment;
 const csv2json = (data) => {
   return new Promise((success, reject) => {
     let csv_data = [];
-
     // Transform CSV into JSON
     csv()
       .fromString(data)
@@ -83,9 +82,9 @@ app.get('/', (req, res) => {
 });
 
 app.post('/cohort', (req, res) => {
-  csv2json(req.data)
+  const body =  req.body;
+  csv2json(body.data)
     .then((data) => {
-      console.log(data);
       // Order the response by the date from older to newer
       const range = moment.range('2017-10-23', '2017-12-11'); 
       let weeks = [];   
@@ -99,17 +98,12 @@ app.post('/cohort', (req, res) => {
       for(let cohort of cohorts) {
         let index_cohort = cohort[0].week;
         for(let cohort_data of cohort.entries()) {
-          console.log(cohort_data);
           final_cohorts.push([index_cohort, cohort_data[1].week, cohort_data[1].count, 0]);
         }
       }
-
-      console.log(final_cohorts);
-
       res.csv(final_cohorts);
     })
     .catch((error) => {
-      console.error(error);
       res.status(500).send('Something broke!');
     })
 });
