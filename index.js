@@ -15,13 +15,13 @@ alasql.fn.moment = moment;
  * @param filename
  * @returns {Promise}
  */
-const csv2json = (filename) => {
+const csv2json = (data) => {
   return new Promise((success, reject) => {
     let csv_data = [];
 
     // Transform CSV into JSON
     csv()
-      .fromFile(`./data/${filename}`)
+      .fromString(data)
       .on('json',(jsonObj)=>{
         csv_data.push({
           distinct_id: jsonObj.distinct_id,
@@ -82,11 +82,10 @@ app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
 
-app.get('/cohort', (req, res) => {
-  const { filename, frecuency } = {filename: 'effortless.csv', frecuency: 'weekly'};
-
-  csv2json(filename)
+app.post('/cohort', (req, res) => {
+  csv2json(req.data)
     .then((data) => {
+      console.log(data);
       // Order the response by the date from older to newer
       const range = moment.range('2017-10-23', '2017-12-11'); 
       let weeks = [];   
@@ -115,4 +114,6 @@ app.get('/cohort', (req, res) => {
     })
 });
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+app.listen(process.env.PORT || 3000, ()=> {
+  console.log('Example app listening on port 3000!');
+});
