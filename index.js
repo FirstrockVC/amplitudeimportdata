@@ -114,7 +114,7 @@ app.post('/cohort', (req, res) => {
           final_cohorts.push([index_cohort, cohort_data[1].week, cohort_data[1].count, 0]);
         }
       }
-      res.send({data: final_cohorts});
+      res.send({data: cohorts});
     })
     .catch((error) => {
       res.status(500).send('Something broke!');
