@@ -1,5 +1,4 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
 const app = express();
 const bodyParser = require('body-parser');
 const csv = require('csvtojson');
@@ -21,7 +20,7 @@ const csv2json = (data) => {
     let csv_data = [];
     // Transform CSV into JSON
     csv()
-      .fromFile(data)
+      .fromString(data)
       .on('json',(jsonObj)=>{
         csv_data.push({
           distinct_id: jsonObj.distinct_id,
@@ -72,12 +71,8 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
 };
 
 // Body parser configuration
-app.use( bodyParser.json() );
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-}));
-
-app.use(fileUpload());
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 // Add headers
 app.use(function (req, res, next) {
@@ -92,7 +87,7 @@ app.use(function (req, res, next) {
       res.setHeader('Access-Control-Allow-Credentials', true);
       // Pass to next layer of middleware
       next();
-});
+  });
 
 // Initial API Endpoint
 app.get('/', (req, res) => {
@@ -100,11 +95,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/cohort', (req, res) => {
-  if (!req.files)
-  return res.status(400).send('No files were uploaded.');
-
   const body =  req.body;
-  csv2json(req.files.data)
+  csv2json(body.data)
     .then((data) => {
       // Order the response by the date from older to newer
       const range = moment.range('2017-10-23', '2017-12-11'); 
