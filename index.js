@@ -23,7 +23,7 @@ const csv2json = (data) => {
       .fromString(data)
       .on('json',(jsonObj)=>{
         csv_data.push({
-          distinct_id: jsonObj.distinct_id,
+          user_id: jsonObj.user_id,
           time: moment(Number(jsonObj.time)).format('MM/DD/YYYY') // Set it to the beginning of the day
         });
       })
@@ -46,9 +46,9 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
   if(weeks.length === 0) return cohorts;
 
   // Extract the cohort unique IDs from week 0
-  const result = alasql('SELECT DISTINCT distinct_id from ? WHERE time BETWEEN "'+ weeks[0] +'" AND "'+ weeks[1] +'" GROUP BY distinct_id ORDER BY time ASC', [data]);
+  const result = alasql('SELECT DISTINCT user_id from ? WHERE time BETWEEN "'+ weeks[0] +'" AND "'+ weeks[1] +'" GROUP BY user_id ORDER BY time ASC', [data]);
   const unique_ids = result.map(obj => {
-    return obj.distinct_id;
+    return obj.user_id;
   });
 
   cohorts[cohort_id] = [];
@@ -59,10 +59,10 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
   for(let [index, week] of weeks.entries()) {
     if (weeks[index + 1] === undefined) continue;
 
-    const query_res = alasql('SELECT DISTINCT distinct_id from ? WHERE distinct_id IN ("'+(unique_ids.join('" , "'))+'") AND time BETWEEN "'+ weeks[index] +'" AND "'+ weeks[index + 1] +'" GROUP BY distinct_id ORDER BY time ASC', [data]);
+    const query_res = alasql('SELECT DISTINCT user_id from ? WHERE user_id IN ("'+(unique_ids.join('" , "'))+'") AND time BETWEEN "'+ weeks[index] +'" AND "'+ weeks[index + 1] +'" GROUP BY user_id ORDER BY time ASC', [data]);
 
     const ids = query_res.map(obj => {
-      return obj.distinct_id;
+      return obj.user_id;
     });
 
     cohorts[cohort_id].push({week: weeks[index + 1], count: ids.length});
@@ -94,12 +94,14 @@ app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
 
-app.post('/cohort', (req, res) => {
+app.get('/cohort', (req, res) => {
   const body =  req.body;
   csv2json(body.data)
     .then((data) => {
       // Order the response by the date from older to newer
-      const range = moment.range('2017-10-23', '2017-12-11'); 
+      const minDate = alasql('select time from ? order by time ASC limit 1', [data]);
+      const maxDate = alasql('select time from ? order by time DESC limit 1', [data]);
+      const range = moment.range(moment(minDate[0].time).day("Monday"), moment(maxDate[0].time).day("Monday")); 
       let weeks = [];   
       for (let month of range.by('week')) {
           weeks.push(month.format('MM/DD/YYYY'));
