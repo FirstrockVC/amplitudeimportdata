@@ -111,10 +111,10 @@ app.post('/cohort', (req, res) => {
       for(let cohort of cohorts) {
         let index_cohort = cohort[0].week;
         for(let cohort_data of cohort.entries()) {
-          final_cohorts.push({'cohort_week': index_cohort, 'activity_week': cohort_data[1].week, 'users': cohort_data[1].count, 'revenue': 0});
+          final_cohorts.push({'cohort_week': index_cohort, 'activity_week': cohort_data[1].week, 'users': cohort_data[1].count , 'revenue': 0});
         }
       }
-      res.send({data: cohorts});
+      res.send(final_cohorts);
     })
     .catch((error) => {
       res.status(500).send('Something broke!');
