@@ -129,11 +129,10 @@ app.post('/cohort', (req, res) => {
 try {
   const privateKey  = fs.readFileSync('./apache.key', 'utf8');
   const certificate = fs.readFileSync('./apache.crt', 'utf8');
+  const credentials = { key: privateKey, cert: certificate };
+  http.createServer(app).listen(80);
+  https.createServer(credentials ,app).listen(443);
+  
 } catch(e) {
   console.log(e)
 }
-
-const credentials = { key: privateKey, cert: certificate };
-
-http.createServer(app).listen(80);
-https.createServer(credentials ,app).listen(443);
