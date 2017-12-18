@@ -66,7 +66,10 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
     });
 
     cohorts[cohort_id].push({week: weeks[index + 1], count: ids.length});
+
+    data = alasql('DELETE user_id from ? WHERE user_id IN ("'+(unique_ids.join('" , "'))+'") AND time BETWEEN "'+ weeks[index] +'" AND "'+ weeks[index + 1] +'"', [data]);
   }
+
   extract_cohorts(weeks, data, cohorts, ++cohort_id);
 };
 
