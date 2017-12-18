@@ -8,6 +8,7 @@ const alasql = require('alasql');
 const Moment = require('moment');
 const MomentRange = require('moment-range');
 const moment = MomentRange.extendMoment(Moment);
+const fs = require('fs');
 
 alasql.fn.moment = moment;
 
