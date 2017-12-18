@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+var expressBatch = require("express-batch");
 const csv = require('csvtojson');
 const alasql = require('alasql');
 const Moment = require('moment');
@@ -31,6 +32,7 @@ const csv2json = (data) => {
         if(error) {
           reject(error);
         } else {
+          console.log(csv_data);
           success(csv_data);
         }
       })
@@ -75,7 +77,7 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 
 // Add headers
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
       // Website you wish to allow to connect
       res.setHeader('Access-Control-Allow-Origin', '*');
       // Request methods you wish to allow
@@ -93,6 +95,9 @@ app.use(function (req, res, next) {
 app.get('/', (req, res) => {
   res.json({ api: 'V1.0', description: 'Cohorts API'});
 });
+
+app.use("/batch", expressBatch(app));
+
 
 app.post('/cohort', (req, res) => {
   const body =  req.body;
