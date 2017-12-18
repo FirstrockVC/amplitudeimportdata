@@ -51,13 +51,10 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
     return obj.user_id;
   });
 
-  cohorts[cohort_id] = [];
-  cohorts[cohort_id].push({week: weeks[0], count: unique_ids.length});
-
-  weeks.splice(0, 1); // Delete the first week
-
   for(let [index, week] of weeks.entries()) {
     if (weeks[index + 1] === undefined) continue;
+
+    if(cohorts[cohort_id] === undefined) { cohorts[cohort_id] = []; }
 
     const query_res = alasql('SELECT DISTINCT user_id from ? WHERE user_id IN ("'+(unique_ids.join('" , "'))+'") AND time BETWEEN "'+ weeks[index] +'" AND "'+ weeks[index + 1] +'" GROUP BY user_id ORDER BY time ASC', [data]);
 
@@ -70,6 +67,7 @@ const extract_cohorts = (weeks, data, cohorts, cohort_id) => {
     data = alasql('DELETE user_id from ? WHERE user_id IN ("'+(unique_ids.join('" , "'))+'") AND time BETWEEN "'+ weeks[index] +'" AND "'+ weeks[index + 1] +'"', [data]);
   }
 
+  weeks.splice(0, 1); // Delete the first week
   extract_cohorts(weeks, data, cohorts, ++cohort_id);
 };
 
