@@ -126,8 +126,13 @@ app.post('/cohort', (req, res) => {
     })
 });
 
-const privateKey  = fs.readFileSync('./apache.key', 'utf8');
-const certificate = fs.readFileSync('./apache.crt', 'utf8');
+try {
+  const privateKey  = fs.readFileSync('./apache.key', 'utf8');
+  const certificate = fs.readFileSync('./apache.crt', 'utf8');
+} catch(e) {
+  console.log(e)
+}
+
 const credentials = { key: privateKey, cert: certificate };
 
 http.createServer(app).listen(80);
