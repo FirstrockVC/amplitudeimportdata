@@ -8,13 +8,6 @@ const alasql = require('alasql');
 const Moment = require('moment');
 const MomentRange = require('moment-range');
 const moment = MomentRange.extendMoment(Moment);
-const csv_out = require('express-csv');
-
-//const privateKey = fs.readFileSync('/etc/ssl/private/apache-selfsigned.key');
-//const certificate = fs.readFileSync('/etc/ssl/certs/apache-selfsigned.crt');
-
-//const credentials = {key: privateKey, cert: certificate};
-
 
 alasql.fn.moment = moment;
 
@@ -131,6 +124,10 @@ app.post('/cohort', (req, res) => {
       res.status(500).send('Something broke!');
     })
 });
+
+const privateKey  = fs.readFileSync('./apache.key', 'utf8');
+const certificate = fs.readFileSync('./apache.crt', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 
 http.createServer(app).listen(80);
 https.createServer(app).listen(443);
