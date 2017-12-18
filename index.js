@@ -1,5 +1,5 @@
 const express = require('express');
-const app = express();
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const csv = require('csvtojson');
 const alasql = require('alasql');
@@ -7,6 +7,14 @@ const Moment = require('moment');
 const MomentRange = require('moment-range');
 const moment = MomentRange.extendMoment(Moment);
 const csv_out = require('express-csv');
+
+const privateKey = fs.readFileSync('/etc/ssl/private/apache-selfsigned.key');
+const certificate = fs.readFileSync('/etc/ssl/apache-selfsigned.crt');
+
+const credentials = {key: privateKey, cert: certificate};
+
+
+const app = express.createServer(credentials);
 
 alasql.fn.moment = moment;
 
