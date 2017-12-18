@@ -9,7 +9,7 @@ const moment = MomentRange.extendMoment(Moment);
 const csv_out = require('express-csv');
 
 const privateKey = fs.readFileSync('/etc/ssl/private/apache-selfsigned.key');
-const certificate = fs.readFileSync('/etc/ssl/apache-selfsigned.crt');
+const certificate = fs.readFileSync('/etc/ssl/certs/apache-selfsigned.crt');
 
 const credentials = {key: privateKey, cert: certificate};
 
