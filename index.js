@@ -130,4 +130,4 @@ const certificate = fs.readFileSync('./apache.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate };
 
 http.createServer(app).listen(80);
-https.createServer(app).listen(443);
+https.createServer(credentials ,app).listen(443);
