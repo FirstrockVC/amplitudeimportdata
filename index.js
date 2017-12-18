@@ -1,5 +1,7 @@
 const express = require('express');
-const fs = require('fs');
+const https = require('https');
+const http = require('http');
+const app = express();
 const bodyParser = require('body-parser');
 const csv = require('csvtojson');
 const alasql = require('alasql');
@@ -8,13 +10,11 @@ const MomentRange = require('moment-range');
 const moment = MomentRange.extendMoment(Moment);
 const csv_out = require('express-csv');
 
-const privateKey = fs.readFileSync('/etc/ssl/private/apache-selfsigned.key');
-const certificate = fs.readFileSync('/etc/ssl/certs/apache-selfsigned.crt');
+//const privateKey = fs.readFileSync('/etc/ssl/private/apache-selfsigned.key');
+//const certificate = fs.readFileSync('/etc/ssl/certs/apache-selfsigned.crt');
 
-const credentials = {key: privateKey, cert: certificate};
+//const credentials = {key: privateKey, cert: certificate};
 
-
-const app = express.createServer(credentials);
 
 alasql.fn.moment = moment;
 
@@ -132,6 +132,5 @@ app.post('/cohort', (req, res) => {
     })
 });
 
-app.listen(process.env.PORT || 3000, ()=> {
-  console.log('Example app listening on port 3000!');
-});
+http.createServer(app).listen(80);
+https.createServer(options, app).listen(443);
